@@ -124,8 +124,8 @@ function crossing(fathers, probCrossing){
 
     let i;
     for(i=0 ; i<fathers.length ; i+=2){
-        const randomNum1 = Math.round(Math.random() * (fathers.length - 1));
-        const randomNum2 = Math.round(Math.random() * (fathers.length - 2));
+        const randomNum1 = Math.round(Math.random() * (fathers[i].length));
+        const randomNum2 = Math.round(Math.random() * (fathers[i].length));
         const randomNumCrossing = Math.round(Math.random() * 1);
         sonsBuff.push(fathers[i]);
         sonsBuff.push(fathers[i+1]);
@@ -138,10 +138,7 @@ function crossing(fathers, probCrossing){
 
         //Puede que no haya cruce por la probabilidad de cruce
         if(randomNumCrossing < probCrossing){
-            if(randomNum1 < randomNum2 || randomNum2 < randomNum1){
-                // let initial1 = sons[i].slice(randomNum2, 0)                    
-
-                // let end2 = sons[i+1].slice(randomNum1, 6)           
+            if(randomNum1 < randomNum2 || randomNum2 < randomNum1){      
 
                 if(randomNum1 < randomNum2){
                     let middle1 = sonsBuff[i].slice(randomNum1, randomNum2)                
@@ -152,19 +149,37 @@ function crossing(fathers, probCrossing){
 
                     sonsBuff[i+1].splice(randomNum1, middle1.length, ...middle1)
                 } else{
-                    // sons[i].splice(randomNum1, end2.length, ...end2)
+                    let cutRight = sonsBuff[i+1].slice(0, randomNum2)
+                    let cutLeft = sonsBuff[i].slice(0, randomNum2);
+                    console.log(`Este es el corte 1 ->${cutLeft}`)
+                    sonsBuff[i].splice(0,randomNum2,...cutRight);
+                    
+                    
+                    console.log(`Este es el corte 2 ->${cutRight}`)
+                    sonsBuff[i+1].splice(0,randomNum2,...cutLeft);
 
-                    // console.log(sons[i+1].splice(randomNum1, initial1.length, ...initial1))
+                    //Aun no funciona el corte de la derecha
+                    cutLeft = sonsBuff[i].slice(randomNum1, sonsBuff[i].length+1)
+                    console.log(`Este es el corte 1 derecha ->${cutLeft}`)
+                    sonsBuff[i].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutLeft);
+                    console.log(`Argumento 1->${randomNum1-1}, argumento 2->${sonsBuff[i].length - randomNum1}`);
+
+                    cutRight = sonsBuff[i+1].slice(randomNum1, sonsBuff[i].length+1)
+                    console.log(`Este es el corte 2 derecha ->${cutRight}`)
+                    sonsBuff[i+1].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight);
+
+                    console.log(`El hijo 1 quedo asi ->${sonsBuff[i]}`)
+                    console.log(`El hijo 2 quedo asi ->${sonsBuff[i+1]}`)
+
                 }
 
             }
-        } else {
-            console.log("No hubo crossing por probabilidad de cruce");
         }
+        console.log("No hubo crossing por probabilidad de cruce");
 
     }
 
-    return sons;
+    return sonsBuff;
 
     
 }
