@@ -5,9 +5,10 @@ function main() {
     const itemsWeight = [22, 39, 99, 63, 68, 2];
     const itemsValue = [43, 3, 45, 12, 43, 16];
     const backpackSize = 150;
+    const probCrossing = 0.75;
     let populationSize = 0;
     while (populationSize <= 0) {
-        populationSize = prompt('¿De qué tamaño quieres la población?');
+        populationSize = prompt('¿De qué tamaño quieres la población? ');
     }
     const population = getInitialPopulation(populationSize, itemsWeight);
     const populationWeights = getPopulationWeights(population, itemsWeight);
@@ -17,11 +18,14 @@ function main() {
         itemsValue,
         backpackSize
     );
-    const fathers = getFathers(population, populationFitness);
+    
     console.log('population', population);
     console.log('populationWeights', populationWeights);
     console.log('populationFitness', populationFitness);
+    const fathers = getFathers(population, populationFitness);
     console.log('fathers', fathers);
+    const sons = crossing(fathers, probCrossing);
+    console.log('Sons', sons);
 }
 main();
 
@@ -112,4 +116,55 @@ function getFathers(population, populationFitness) {
         return contender2;
     });
     return fathersBuff;
+}
+
+function crossing(fathers, probCrossing){
+    
+    const sonsBuff = [];
+
+    let i;
+    for(i=0 ; i<fathers.length ; i+=2){
+        const randomNum1 = Math.round(Math.random() * (fathers.length - 1));
+        const randomNum2 = Math.round(Math.random() * (fathers.length - 2));
+        const randomNumCrossing = Math.round(Math.random() * 1);
+        sonsBuff.push(fathers[i]);
+        sonsBuff.push(fathers[i+1]);
+
+        console.log("CROSSING");
+        console.log('father1', fathers[i]);
+        console.log('father2', fathers[i+1]);
+        console.log(`Random1-> ${randomNum1}`);
+        console.log(`Random2-> ${randomNum2}`);
+
+        //Puede que no haya cruce por la probabilidad de cruce
+        if(randomNumCrossing < probCrossing){
+            if(randomNum1 < randomNum2 || randomNum2 < randomNum1){
+                // let initial1 = sons[i].slice(randomNum2, 0)                    
+
+                // let end2 = sons[i+1].slice(randomNum1, 6)           
+
+                if(randomNum1 < randomNum2){
+                    let middle1 = sonsBuff[i].slice(randomNum1, randomNum2)                
+
+                    let middle2 = sonsBuff[i+1].slice(randomNum1, randomNum2)
+                    
+                    sonsBuff[i].splice(randomNum1, middle1.length, ...middle2)
+
+                    sonsBuff[i+1].splice(randomNum1, middle1.length, ...middle1)
+                } else{
+                    // sons[i].splice(randomNum1, end2.length, ...end2)
+
+                    // console.log(sons[i+1].splice(randomNum1, initial1.length, ...initial1))
+                }
+
+            }
+        } else {
+            console.log("No hubo crossing por probabilidad de cruce");
+        }
+
+    }
+
+    return sons;
+
+    
 }
