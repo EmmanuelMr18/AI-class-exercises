@@ -118,40 +118,46 @@ function getFathers(population, populationFitness) {
     return fathersBuff;
 }
 
+//La funcion crossing retorna un array con los hijos que resultaron del cruce
+
 function crossing(fathers, probCrossing){
     
-    const sonsBuff = [];
+    const sonsBuff = fathers.slice();
 
     let i;
     for(i=0 ; i<fathers.length ; i+=2){
-        const randomNum1 = Math.round(Math.random() * (fathers[i].length));
-        const randomNum2 = Math.round(Math.random() * (fathers[i].length));
+        const randomNum1 = Math.round(Math.random() * (sonsBuff[i].length));
+        const randomNum2 = Math.round(Math.random() * (sonsBuff[i].length));
         const randomNumCrossing = Math.round(Math.random() * 1);
-        sonsBuff.push(fathers[i]);
-        sonsBuff.push(fathers[i+1]);
 
-        //Puede que no haya cruce por la probabilidad de cruce
+        //Validamos si el numero aleatorio es menor a la probabilidad de cruce
+
         if(randomNumCrossing < probCrossing){
             if(randomNum1 < randomNum2 || randomNum2 < randomNum1){      
 
                 if(randomNum1 < randomNum2){
+                    //Intercambiamos el centro de un individuo al otro y viceversa
+
                     let middle1 = sonsBuff[i].slice(randomNum1, randomNum2)                
                     let middle2 = sonsBuff[i+1].slice(randomNum1, randomNum2)
-                    
+                   
                     sonsBuff[i].splice(randomNum1, middle1.length, ...middle2)
                     sonsBuff[i+1].splice(randomNum1, middle1.length, ...middle1)
+
                 } else{
-                    let cutRight = sonsBuff[i+1].slice(0, randomNum2)
-                    let cutLeft = sonsBuff[i].slice(0, randomNum2);
+                    //Intercambiamos los lados de un al otro y viceversa
+                    
+                    let cutLeft1 = sonsBuff[i].slice(0, randomNum2);
+                    let cutLeft2 = sonsBuff[i+1].slice(0, randomNum2)
 
-                    sonsBuff[i].splice(0,randomNum2,...cutRight);                    
-                    sonsBuff[i+1].splice(0,randomNum2,...cutLeft);
+                    sonsBuff[i].splice(0,randomNum2,...cutLeft2);                    
+                    sonsBuff[i+1].splice(0,randomNum2,...cutLeft1);
 
-                    cutLeft = sonsBuff[i].slice(randomNum1, sonsBuff[i].length+1)
-                    cutRight = sonsBuff[i+1].slice(randomNum1, sonsBuff[i].length+1)
+                    let cutRight1 = sonsBuff[i].slice(randomNum1, sonsBuff[i].length+1)
+                    let cutRight2 = sonsBuff[i+1].slice(randomNum1, sonsBuff[i].length+1)
 
-                    sonsBuff[i].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight);
-                    sonsBuff[i+1].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutLeft);
+                    sonsBuff[i].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight2);
+                    sonsBuff[i+1].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight1);
 
                 }
 
@@ -162,5 +168,4 @@ function crossing(fathers, probCrossing){
 
     return sonsBuff;
 
-    
 }
