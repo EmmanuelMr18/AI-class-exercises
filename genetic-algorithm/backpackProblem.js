@@ -145,7 +145,7 @@ function crossing(fathers, probCrossing){
                     sonsBuff[i+1].splice(randomNum1, middle1.length, ...middle1)
 
                 } else{
-                    //Intercambiamos los lados de un al otro y viceversa
+                    //Intercambiamos los lados de un individuo al otro y viceversa
                     
                     let cutLeft1 = sonsBuff[i].slice(0, randomNum2);
                     let cutLeft2 = sonsBuff[i+1].slice(0, randomNum2)
