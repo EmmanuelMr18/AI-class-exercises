@@ -5,9 +5,10 @@ function main() {
     const itemsWeight = [22, 39, 99, 63, 68, 2];
     const itemsValue = [43, 3, 45, 12, 43, 16];
     const backpackSize = 150;
+    const probCrossing = 0.75;
     let populationSize = 0;
     while (populationSize <= 0) {
-        populationSize = prompt('¿De qué tamaño quieres la población?');
+        populationSize = prompt('¿De qué tamaño quieres la población? ');
     }
     const population = getInitialPopulation(populationSize, itemsWeight);
     const populationWeights = getPopulationWeights(population, itemsWeight);
@@ -17,11 +18,14 @@ function main() {
         itemsValue,
         backpackSize
     );
-    const fathers = getFathers(population, populationFitness);
+    
     console.log('population', population);
     console.log('populationWeights', populationWeights);
     console.log('populationFitness', populationFitness);
+    const fathers = getFathers(population, populationFitness);
     console.log('fathers', fathers);
+    const sons = crossing(fathers, probCrossing);
+    console.log('Sons', sons);
 }
 main();
 
@@ -112,4 +116,56 @@ function getFathers(population, populationFitness) {
         return contender2;
     });
     return fathersBuff;
+}
+
+//La funcion crossing retorna un array con los hijos que resultaron del cruce
+
+function crossing(fathers, probCrossing){
+    
+    const sonsBuff = fathers.slice();
+
+    let i;
+    for(i=0 ; i<fathers.length ; i+=2){
+        const randomNum1 = Math.round(Math.random() * (sonsBuff[i].length));
+        const randomNum2 = Math.round(Math.random() * (sonsBuff[i].length));
+        const randomNumCrossing = Math.round(Math.random() * 1);
+
+        //Validamos si el numero aleatorio es menor a la probabilidad de cruce
+
+        if(randomNumCrossing < probCrossing){
+            if(randomNum1 < randomNum2 || randomNum2 < randomNum1){      
+
+                if(randomNum1 < randomNum2){
+                    //Intercambiamos el centro de un individuo al otro y viceversa
+
+                    let middle1 = sonsBuff[i].slice(randomNum1, randomNum2)                
+                    let middle2 = sonsBuff[i+1].slice(randomNum1, randomNum2)
+                   
+                    sonsBuff[i].splice(randomNum1, middle1.length, ...middle2)
+                    sonsBuff[i+1].splice(randomNum1, middle1.length, ...middle1)
+
+                } else{
+                    //Intercambiamos los lados de un individuo al otro y viceversa
+                    
+                    let cutLeft1 = sonsBuff[i].slice(0, randomNum2);
+                    let cutLeft2 = sonsBuff[i+1].slice(0, randomNum2)
+
+                    sonsBuff[i].splice(0,randomNum2,...cutLeft2);                    
+                    sonsBuff[i+1].splice(0,randomNum2,...cutLeft1);
+
+                    let cutRight1 = sonsBuff[i].slice(randomNum1, sonsBuff[i].length+1)
+                    let cutRight2 = sonsBuff[i+1].slice(randomNum1, sonsBuff[i].length+1)
+
+                    sonsBuff[i].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight2);
+                    sonsBuff[i+1].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight1);
+
+                }
+
+            }
+        }
+
+    }
+
+    return sonsBuff;
+
 }
