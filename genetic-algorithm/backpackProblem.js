@@ -6,7 +6,7 @@ function main() {
     const itemsValue = [43, 3, 45, 12, 43, 16];
     const backpackSize = 150;
     const probCrossing = 0.75;
-    const probMutation = 0.75; //<- Valor de prueba - Modificar despues
+    const probMutation = 0.008;
     let populationSize = 0;
     while (populationSize <= 0) {
         populationSize = prompt('¿De qué tamaño quieres la población? ');
