@@ -6,6 +6,7 @@ function main() {
     const itemsValue = [43, 3, 45, 12, 43, 16];
     const backpackSize = 150;
     const probCrossing = 0.75;
+    const probMutation = 0.75; //<- Valor de prueba - Modificar despues
     let populationSize = 0;
     while (populationSize <= 0) {
         populationSize = prompt('¿De qué tamaño quieres la población? ');
@@ -26,6 +27,13 @@ function main() {
     console.log('fathers', fathers);
     const sons = crossing(fathers, probCrossing);
     console.log('Sons', sons);
+    const sonsM = mutation(
+        sons,
+        probMutation,
+        itemsWeight,
+        itemsValue,
+        backpackSize);
+    console.log('Mutated sons', sonsM);
 }
 main();
 
@@ -168,4 +176,46 @@ function crossing(fathers, probCrossing){
 
     return sonsBuff;
 
+}
+
+//La funcion mutation retorna un array con los hijos incluyendo los que
+//tuvieron una mutación y tambien muestra el mejor indivuo de ese array
+
+function mutation(sons, probMutation, itemsWeight, itemsValue, backpackSize){
+
+    //Aplica la mutación cambiando de 0 a 1 y viceversa los valores de cada individuo
+    const sonsMBuff = sons.map((individual, index)=>{
+
+        const value = individual.map((bit, index)=>{
+            const randomNumMutation = Math.random() * 1;
+            
+            if(randomNumMutation < probMutation){
+                bit = 1 - bit;
+                return bit
+            }
+            return bit
+        })
+
+        return value
+    })
+
+    //Obtenemos los pesos y fitness de los hijos utlizando las funciones anteriores
+    const sonsWeights = getPopulationWeights(sonsMBuff, itemsWeight)
+    const sonsMutation = getPopulationFitness(sonsMBuff, sonsWeights, itemsValue, backpackSize);
+
+    //Iteramos para buscar el mejor individuo entre los hijos
+    let currentIndividual = sonsMutation[0];
+    let i;
+    let index;
+
+    for(i = 0 ; i < sonsMutation.length ; i++){
+        if(currentIndividual <= sonsMutation[i]){
+            currentIndividual = sonsMutation[i]
+            index = i;
+        }
+    }
+
+    console.log(`El mejor individuo es ${sonsMBuff[index]} con un fitness de -> ${currentIndividual}`);
+
+    return sonsMBuff;
 }
