@@ -19,7 +19,7 @@ function main() {
         itemsValue,
         backpackSize
     );
-    
+
     console.log('population', population);
     console.log('populationWeights', populationWeights);
     console.log('populationFitness', populationFitness);
@@ -27,13 +27,17 @@ function main() {
     console.log('fathers', fathers);
     const sons = crossing(fathers, probCrossing);
     console.log('Sons', sons);
-    const sonsM = mutation(
+    const [sonsMutated, bestSon, bestSonFitness] = mutation(
         sons,
         probMutation,
         itemsWeight,
         itemsValue,
-        backpackSize);
-    console.log('Mutated sons', sonsM);
+        backpackSize
+    );
+    console.log('Mutated sons', sonsMutated);
+    console.log(
+        `El mejor individuo es ${bestSon} con un fitness de -> ${bestSonFitness}`
+    );
 }
 main();
 
@@ -128,94 +132,105 @@ function getFathers(population, populationFitness) {
 
 //La funcion crossing retorna un array con los hijos que resultaron del cruce
 
-function crossing(fathers, probCrossing){
-    
+function crossing(fathers, probCrossing) {
     const sonsBuff = fathers.slice();
 
     let i;
-    for(i=0 ; i<fathers.length ; i+=2){
-        const randomNum1 = Math.round(Math.random() * (sonsBuff[i].length));
-        const randomNum2 = Math.round(Math.random() * (sonsBuff[i].length));
+    for (i = 0; i < fathers.length; i += 2) {
+        const randomNum1 = Math.round(Math.random() * sonsBuff[i].length);
+        const randomNum2 = Math.round(Math.random() * sonsBuff[i].length);
         const randomNumCrossing = Math.round(Math.random() * 1);
 
         //Validamos si el numero aleatorio es menor a la probabilidad de cruce
 
-        if(randomNumCrossing < probCrossing){
-            if(randomNum1 < randomNum2 || randomNum2 < randomNum1){      
-
-                if(randomNum1 < randomNum2){
+        if (randomNumCrossing < probCrossing) {
+            if (randomNum1 < randomNum2 || randomNum2 < randomNum1) {
+                if (randomNum1 < randomNum2) {
                     //Intercambiamos el centro de un individuo al otro y viceversa
 
-                    let middle1 = sonsBuff[i].slice(randomNum1, randomNum2)                
-                    let middle2 = sonsBuff[i+1].slice(randomNum1, randomNum2)
-                   
-                    sonsBuff[i].splice(randomNum1, middle1.length, ...middle2)
-                    sonsBuff[i+1].splice(randomNum1, middle1.length, ...middle1)
+                    let middle1 = sonsBuff[i].slice(randomNum1, randomNum2);
+                    let middle2 = sonsBuff[i + 1].slice(randomNum1, randomNum2);
 
-                } else{
+                    sonsBuff[i].splice(randomNum1, middle1.length, ...middle2);
+                    sonsBuff[i + 1].splice(
+                        randomNum1,
+                        middle1.length,
+                        ...middle1
+                    );
+                } else {
                     //Intercambiamos los lados de un individuo al otro y viceversa
-                    
+
                     let cutLeft1 = sonsBuff[i].slice(0, randomNum2);
-                    let cutLeft2 = sonsBuff[i+1].slice(0, randomNum2)
+                    let cutLeft2 = sonsBuff[i + 1].slice(0, randomNum2);
 
-                    sonsBuff[i].splice(0,randomNum2,...cutLeft2);                    
-                    sonsBuff[i+1].splice(0,randomNum2,...cutLeft1);
+                    sonsBuff[i].splice(0, randomNum2, ...cutLeft2);
+                    sonsBuff[i + 1].splice(0, randomNum2, ...cutLeft1);
 
-                    let cutRight1 = sonsBuff[i].slice(randomNum1, sonsBuff[i].length+1)
-                    let cutRight2 = sonsBuff[i+1].slice(randomNum1, sonsBuff[i].length+1)
+                    let cutRight1 = sonsBuff[i].slice(
+                        randomNum1,
+                        sonsBuff[i].length + 1
+                    );
+                    let cutRight2 = sonsBuff[i + 1].slice(
+                        randomNum1,
+                        sonsBuff[i].length + 1
+                    );
 
-                    sonsBuff[i].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight2);
-                    sonsBuff[i+1].splice(randomNum1,sonsBuff[i].length - randomNum1,...cutRight1);
-
+                    sonsBuff[i].splice(
+                        randomNum1,
+                        sonsBuff[i].length - randomNum1,
+                        ...cutRight2
+                    );
+                    sonsBuff[i + 1].splice(
+                        randomNum1,
+                        sonsBuff[i].length - randomNum1,
+                        ...cutRight1
+                    );
                 }
-
             }
         }
-
     }
 
     return sonsBuff;
-
 }
 
 //La funcion mutation retorna un array con los hijos incluyendo los que
 //tuvieron una mutación y tambien muestra el mejor indivuo de ese array
 
-function mutation(sons, probMutation, itemsWeight, itemsValue, backpackSize){
-
+function mutation(sons, probMutation, itemsWeight, itemsValue, backpackSize) {
     //Aplica la mutación cambiando de 0 a 1 y viceversa los valores de cada individuo
-    const sonsMBuff = sons.map((individual, index)=>{
-
-        const value = individual.map((bit, index)=>{
+    const sonsMBuff = sons.map((individual, index) => {
+        const value = individual.map((bit, index) => {
             const randomNumMutation = Math.random() * 1;
-            
-            if(randomNumMutation < probMutation){
-                bit = 1 - bit;
-                return bit
-            }
-            return bit
-        })
 
-        return value
-    })
+            if (randomNumMutation < probMutation) {
+                bit = 1 - bit;
+                return bit;
+            }
+            return bit;
+        });
+
+        return value;
+    });
 
     //Obtenemos los pesos y fitness de los hijos utlizando las funciones anteriores
-    const sonsWeights = getPopulationWeights(sonsMBuff, itemsWeight)
-    const sonsMutation = getPopulationFitness(sonsMBuff, sonsWeights, itemsValue, backpackSize);
+    const sonsWeights = getPopulationWeights(sonsMBuff, itemsWeight);
+    const sonsMutationFitness = getPopulationFitness(
+        sonsMBuff,
+        sonsWeights,
+        itemsValue,
+        backpackSize
+    );
 
     //Iteramos para buscar el mejor individuo entre los hijos
-    let currentIndividual = sonsMutation[0];
-    let i;
-    let index;
+    let currentIndividual = sonsMutationFitness[0];
+    let highestFitnessIndex;
 
-    for(i = 0 ; i < sonsMutation.length ; i++){
-        if(currentIndividual <= sonsMutation[i]){
-            currentIndividual = sonsMutation[i]
-            index = i;
+    for (let i = 0; i < sonsMutationFitness.length; i++) {
+        if (currentIndividual <= sonsMutationFitness[i]) {
+            currentIndividual = sonsMutationFitness[i];
+            highestFitnessIndex = i;
         }
     }
 
-    console.log(`El mejor individuo es ${sonsMBuff[index]} con un fitness de -> ${currentIndividual}`);
-
-    return sonsMBuff;
+    return [sonsMBuff, sonsMBuff[highestFitnessIndex], currentIndividual];
 }
