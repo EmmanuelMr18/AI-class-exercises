@@ -17,7 +17,11 @@ function main() {
     const probCrossing = 0.75;
     const probMutation = 0.008;
     let populationSize = 0;
-    while (populationSize <= 0) {
+    while (
+        populationSize <= 0 ||
+        populationSize % 2 != 0 ||
+        isNaN(populationSize)
+    ) {
         populationSize = Number(
             prompt('¿De qué tamaño quieres la población? ')
         );
@@ -25,7 +29,10 @@ function main() {
     let population = getInitialPopulation(populationSize, timeCPU);
     let bestSolution;
     let bestSolutionFitness = 1000000000000000000000;
-    for (let i = 0; i < 10; i++) {
+    const iterations = Number(
+        prompt('¿Cuántas veces quieres iterar en el algoritmo?')
+    );
+    for (let i = 0; i < iterations; i++) {
         // const populationWeights = getPopulationWeights(population, itemsWeight);
         const populationFitness = getPopulationFitness(
             population,
@@ -51,7 +58,7 @@ function main() {
         }
 
         console.log('Mutated sons', sonsMutated);
-        population = sonsMutated
+        population = sonsMutated;
     }
     console.log(
         `El mejor individuo es ${bestSolution} con un fitness de -> ${bestSolutionFitness}`
