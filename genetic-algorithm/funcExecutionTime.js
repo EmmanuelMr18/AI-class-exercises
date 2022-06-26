@@ -2,41 +2,58 @@
 // y se llaman a las otras funciones
 const prompt = require('prompt-sync')();
 function main() {
-    const itemsWeight = [22, 39, 99, 63, 68, 2];
-    const itemsValue = [43, 3, 45, 12, 43, 16];
-    const backpackSize = 150;
+    const timeCPU = [
+        0.00007908, 1.34657, 1.03074, 0.85831, 0.000937875, 0.12511, 40.73623,
+        401.62466,
+    ];
+    const timeGPU = [
+        0.0006705, 0.04983, 0.20446, 0.00848, 0.33822, 0.02247, 0.78154,
+        0.62351,
+    ];
+
+    // const itemsWeight = [22, 39, 99, 63, 68, 2];
+    // const itemsValue = [43, 3, 45, 12, 43, 16];
+    // const backpackSize = 150;
     const probCrossing = 0.75;
     const probMutation = 0.008;
     let populationSize = 0;
     while (populationSize <= 0) {
-        populationSize = prompt('¿De qué tamaño quieres la población? ');
+        populationSize = Number(
+            prompt('¿De qué tamaño quieres la población? ')
+        );
     }
-    const population = getInitialPopulation(populationSize, itemsWeight);
-    const populationWeights = getPopulationWeights(population, itemsWeight);
-    const populationFitness = getPopulationFitness(
-        population,
-        populationWeights,
-        itemsValue,
-        backpackSize
-    );
+    let population = getInitialPopulation(populationSize, timeCPU);
+    let bestSolution;
+    let bestSolutionFitness = 1000000000000000000000;
+    for (let i = 0; i < 10; i++) {
+        // const populationWeights = getPopulationWeights(population, itemsWeight);
+        const populationFitness = getPopulationFitness(
+            population,
+            timeCPU,
+            timeGPU
+        );
 
-    console.log('population', population);
-    console.log('populationWeights', populationWeights);
-    console.log('populationFitness', populationFitness);
-    const fathers = getFathers(population, populationFitness);
-    console.log('fathers', fathers);
-    const sons = crossing(fathers, probCrossing);
-    console.log('Sons', sons);
-    const [sonsMutated, bestSon, bestSonFitness] = mutation(
-        sons,
-        probMutation,
-        itemsWeight,
-        itemsValue,
-        backpackSize
-    );
-    console.log('Mutated sons', sonsMutated);
+        console.log('population', population);
+        console.log('populationFitness', populationFitness);
+        const fathers = getFathers(population, populationFitness);
+        console.log('fathers', fathers);
+        const sons = crossing(fathers, probCrossing);
+        console.log('Sons', sons);
+        const [sonsMutated, bestSon, bestSonFitness] = mutation(
+            sons,
+            probMutation,
+            timeCPU,
+            timeGPU
+        );
+        if (bestSonFitness < bestSolutionFitness) {
+            bestSolution = bestSon;
+            bestSolutionFitness = bestSonFitness;
+        }
+
+        console.log('Mutated sons', sonsMutated);
+    }
     console.log(
-        `El mejor individuo es ${bestSon} con un fitness de -> ${bestSonFitness}`
+        `El mejor individuo es ${bestSolution} con un fitness de -> ${bestSolutionFitness}`
     );
 }
 main();
@@ -44,7 +61,7 @@ main();
 //La funcion getInitialPopulation toma como parametros el tamaño de la población y el peso de los objetos
 //y retorna la población inicial
 
-function getInitialPopulation(populationSize, itemsWeight) {
+function getInitialPopulation(populationSize, timeCPU) {
     const populationBuff = [];
 
     //Mediante 2 fors va creando los vectores
@@ -52,7 +69,7 @@ function getInitialPopulation(populationSize, itemsWeight) {
     //for genera el numero aleatorio ya sea 0 ó 1
     for (let i = 0; i < populationSize; i++) {
         const individualBuff = [];
-        for (let j = 0; j < itemsWeight.length; j++) {
+        for (let j = 0; j < timeCPU.length; j++) {
             const randomNum = Math.round(Math.random() * 1);
 
             //Para agregar el valor al final al arreglo se hace uso del metodo push
@@ -81,25 +98,20 @@ function getPopulationWeights(population, itemsWeight) {
 
 //La función getPopultationFitness retorna el fitness de cada individuo
 
-function getPopulationFitness(
-    population,
-    populationWeights,
-    itemsValue,
-    backpackSize
-) {
-    const populationFitnessBuff = population.map((individual, index) => {
-        //Si el peso es mayor a la capacidad se retorna a 0
-        if (populationWeights[index] > backpackSize) {
-            return 0;
-        }
-        return individual.reduce((acc, itemBool, index) => {
-            if (itemBool === 0) {
-                return acc;
-            }
-            return acc + itemsValue[index];
-        }, 0);
+function getPopulationFitness(population, timeCPU, timeGPU) {
+    const populationFitnessBuff = population.map((individual) => {
+        return getIndividualFitness(individual, timeCPU, timeGPU);
     });
     return populationFitnessBuff;
+}
+
+function getIndividualFitness(individual, timeCPU, timeGPU) {
+    return individual.reduce((acc, itemBool, index) => {
+        if (itemBool === 0) {
+            return acc + timeCPU[index];
+        }
+        return acc + timeGPU[index];
+    }, 0);
 }
 
 //La función getFathers retorna los padres seleccionados
@@ -122,7 +134,7 @@ function getFathers(population, populationFitness) {
         console.log('fitness2', fitness2);
         console.log('---------------------');
 
-        if (fitness1 === fitness2 || fitness1 > fitness2) {
+        if (fitness1 === fitness2 || fitness1 < fitness2) {
             return contender1;
         }
         return contender2;
@@ -196,10 +208,12 @@ function crossing(fathers, probCrossing) {
 //La funcion mutation retorna un array con los hijos incluyendo los que
 //tuvieron una mutación y tambien muestra el mejor indivuo de ese array
 
-function mutation(sons, probMutation, itemsWeight, itemsValue, backpackSize) {
+function mutation(sons, probMutation, timeCPU, timeGPU) {
+    let bestSon;
+    let bestSonFitness = 1000000000000000000000;
     //Aplica la mutación cambiando de 0 a 1 y viceversa los valores de cada individuo
     const sonsMBuff = sons.map((individual, index) => {
-        const value = individual.map((bit, index) => {
+        const sonMutated = individual.map((bit, index) => {
             const randomNumMutation = Math.random() * 1;
 
             if (randomNumMutation < probMutation) {
@@ -208,29 +222,12 @@ function mutation(sons, probMutation, itemsWeight, itemsValue, backpackSize) {
             }
             return bit;
         });
-
-        return value;
-    });
-
-    //Obtenemos los pesos y fitness de los hijos utlizando las funciones anteriores
-    const sonsWeights = getPopulationWeights(sonsMBuff, itemsWeight);
-    const sonsMutationFitness = getPopulationFitness(
-        sonsMBuff,
-        sonsWeights,
-        itemsValue,
-        backpackSize
-    );
-
-    //Iteramos para buscar el mejor individuo entre los hijos
-    let currentIndividual = sonsMutationFitness[0];
-    let highestFitnessIndex;
-
-    for (let i = 0; i < sonsMutationFitness.length; i++) {
-        if (currentIndividual <= sonsMutationFitness[i]) {
-            currentIndividual = sonsMutationFitness[i];
-            highestFitnessIndex = i;
+        const sonFitness = getIndividualFitness(sonMutated, timeCPU, timeGPU);
+        if (sonFitness < bestSonFitness) {
+            bestSon = sonMutated;
+            bestSonFitness = sonFitness;
         }
-    }
-
-    return [sonsMBuff, sonsMBuff[highestFitnessIndex], currentIndividual];
+        return sonMutated;
+    });
+    return [sonsMBuff, bestSon, bestSonFitness];
 }
