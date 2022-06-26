@@ -51,6 +51,7 @@ function main() {
         }
 
         console.log('Mutated sons', sonsMutated);
+        population = sonsMutated
     }
     console.log(
         `El mejor individuo es ${bestSolution} con un fitness de -> ${bestSolutionFitness}`
