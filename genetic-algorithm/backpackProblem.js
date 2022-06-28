@@ -2,12 +2,19 @@
 // y se llaman a las otras funciones
 const prompt = require('prompt-sync')();
 function main() {
-    const itemsWeight = [22, 39, 99, 63, 68, 2];
-    const itemsValue = [43, 3, 45, 12, 43, 16];
-    const backpackSize = 150;
-    const probCrossing = 0.75;
-    const probMutation = 0.008;
     let populationSize = 0;
+    let numberItems = 0;
+
+    while (numberItems <= 0) {
+        numberItems = prompt('¿Cuántos objetos serán? ');
+    }
+    const itemsWeight = weights(numberItems);
+    const itemsValue = values(numberItems);
+
+    backpackSize = prompt('Ingresa el tamaño de la mochila: ');
+    probCrossing = prompt('Ingresa la probabilidad de cruce entre 0.65 y 0.80: ');
+    probMutation = prompt('Ingresa la probabilidad de mutacion entre 0.001 y 0.01: ')
+
     while (populationSize <= 0) {
         populationSize = prompt('¿De qué tamaño quieres la población? ');
     }
@@ -40,6 +47,32 @@ function main() {
     );
 }
 main();
+
+//La funcion weights le pide al usuario el peso de todos los objetos
+function weights(numberItems){
+    const weightsBuff = [];
+    let aux;
+    let i;
+    for(i = 0; i < numberItems; i++){
+        aux = prompt(`Ingresa el peso ${i+1}: `);
+        weightsBuff[i] = Number(aux);
+    }
+
+    return weightsBuff;
+}
+
+//La funcion values le pide al usuario el valor de todos los objetos
+function values(numberItems){
+    const valuesBuff = [];
+    let aux;
+    let i;
+    for(i = 0; i < numberItems; i++){
+        aux = prompt(`Ingresa el valor ${i+1}: `);
+        valuesBuff[i] = Number(aux);
+    }
+
+    return valuesBuff;
+}
 
 //La funcion getInitialPopulation toma como parametros el tamaño de la población y el peso de los objetos
 //y retorna la población inicial
